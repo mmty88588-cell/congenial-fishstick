@@ -1,0 +1,257 @@
+%login.html
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>用户登录</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            font-family:"Microsoft YaHei",sans-serif;
+            background:linear-gradient(135deg,#74ebd5,#9face6);
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+        }
+        .box{
+            width:400px;
+            background:#fff;
+            padding:35px;
+            border-radius:12px;
+            box-shadow:0 10px 30px rgba(0,0,0,.2);
+        }
+        h2{text-align:center;margin-bottom:25px;}
+        .item{margin-bottom:16px;}
+        .item label{display:block;margin-bottom:8px;}
+        .item input{
+            width:100%;height:42px;padding:0 12px;
+            border:1px solid #ccc;border-radius:6px;outline:none;
+        }
+        .btn{
+            width:100%;height:42px;border:none;background:#409eff;
+            color:#fff;border-radius:6px;cursor:pointer;
+        }
+        .msg{margin-bottom:14px;text-align:center;color:red;}
+        .success{margin-bottom:14px;text-align:center;color:green;}
+        .link{text-align:center;margin-top:15px;}
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2>用户登录</h2>
+
+    <div class="msg" th:if="${errorMsg != null}" th:text="${errorMsg}"></div>
+    <div class="success" th:if="${successMsg != null}" th:text="${successMsg}"></div>
+
+    <form th:action="@{/app/doLogin}" method="post">
+        <div class="item">
+            <label>用户名：</label>
+            <input type="text" name="username" th:value="${username}" placeholder="请输入用户名">
+        </div>
+        <div class="item">
+            <label>密码：</label>
+            <input type="password" name="password" placeholder="请输入密码">
+        </div>
+        <button class="btn" type="submit">登录</button>
+    </form>
+
+    <div class="link">
+        还没有账号？<a th:href="@{/app/register}">去注册</a>
+    </div>
+</div>
+</body>
+</html>
+
+%register.html
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>用户注册</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            font-family:"Microsoft YaHei",sans-serif;
+            background:#f5f7fa;
+        }
+        .box{
+            width:520px;
+            margin:40px auto;
+            background:#fff;
+            padding:30px;
+            border-radius:12px;
+            box-shadow:0 4px 15px rgba(0,0,0,.08);
+        }
+        h2{text-align:center;margin-bottom:25px;}
+        .item{margin-bottom:14px;}
+        .item label{display:block;margin-bottom:6px;}
+        .item input,.item select{
+            width:100%;height:40px;padding:0 10px;
+            border:1px solid #ccc;border-radius:6px;outline:none;
+        }
+        .btn{
+            width:100%;height:42px;border:none;background:#67c23a;
+            color:#fff;border-radius:6px;cursor:pointer;margin-top:8px;
+        }
+        .msg{margin-bottom:14px;text-align:center;color:red;}
+        .link{text-align:center;margin-top:15px;}
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2>用户注册</h2>
+
+    <div class="msg" th:if="${errorMsg != null}" th:text="${errorMsg}"></div>
+
+    <form th:action="@{/app/doRegister}" method="post">
+        <div class="item">
+            <label>用户名：</label>
+            <input type="text" name="username" th:value="${user != null ? user.username : ''}" placeholder="请输入用户名">
+        </div>
+        <div class="item">
+            <label>密码：</label>
+            <input type="password" name="password" placeholder="请输入密码">
+        </div>
+        <div class="item">
+            <label>昵称：</label>
+            <input type="text" name="nickname" th:value="${user != null ? user.nickname : ''}" placeholder="请输入昵称">
+        </div>
+        <div class="item">
+            <label>年龄：</label>
+            <input type="number" name="age" th:value="${user != null ? user.age : ''}" placeholder="请输入年龄">
+        </div>
+        <div class="item">
+            <label>邮箱：</label>
+            <input type="text" name="email" th:value="${user != null ? user.email : ''}" placeholder="请输入邮箱">
+        </div>
+        <div class="item">
+            <label>手机号：</label>
+            <input type="text" name="phone" th:value="${user != null ? user.phone : ''}" placeholder="请输入手机号">
+        </div>
+        <div class="item">
+            <label>性别：</label>
+            <select name="gender">
+                <option value="男" th:selected="${user != null and user.gender == '男'}">男</option>
+                <option value="女" th:selected="${user != null and user.gender == '女'}">女</option>
+            </select>
+        </div>
+        <div class="item">
+            <label>地址：</label>
+            <input type="text" name="address" th:value="${user != null ? user.address : ''}" placeholder="请输入地址">
+        </div>
+
+        <button class="btn" type="submit">注册</button>
+    </form>
+
+    <div class="link">
+        已有账号？<a th:href="@{/app/login}">返回登录</a>
+    </div>
+</div>
+</body>
+</html>
+
+%index.html
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>系统首页</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:"Microsoft YaHei",sans-serif;background:#f5f7fa;}
+        .top{
+            height:60px;background:#409eff;color:#fff;
+            display:flex;align-items:center;justify-content:space-between;
+            padding:0 30px;
+        }
+        .content{
+            width:900px;margin:40px auto;background:#fff;
+            padding:35px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.08);
+        }
+        table{width:100%;border-collapse:collapse;margin-top:20px;}
+        th,td{border:1px solid #ddd;padding:12px;text-align:left;}
+        th{width:160px;background:#f7f7f7;}
+        .btns{margin-top:25px;}
+        .btn{
+            display:inline-block;padding:10px 20px;margin-right:12px;
+            text-decoration:none;border-radius:6px;color:#fff;
+        }
+        .blue{background:#409eff;}
+        .red{background:#f56c6c;}
+    </style>
+</head>
+<body>
+<div class="top">
+    <div>用户系统首页</div>
+    <div>当前用户：<span th:text="${user.nickname}">用户</span></div>
+</div>
+
+<div class="content">
+    <h2>登录成功</h2>
+    <table>
+        <tr><th>ID</th><td th:text="${user.id}"></td></tr>
+        <tr><th>用户名</th><td th:text="${user.username}"></td></tr>
+        <tr><th>昵称</th><td th:text="${user.nickname}"></td></tr>
+        <tr><th>年龄</th><td th:text="${user.age}"></td></tr>
+        <tr><th>邮箱</th><td th:text="${user.email}"></td></tr>
+        <tr><th>手机号</th><td th:text="${user.phone}"></td></tr>
+        <tr><th>性别</th><td th:text="${user.gender}"></td></tr>
+        <tr><th>地址</th><td th:text="${user.address}"></td></tr>
+    </table>
+
+    <div class="btns">
+        <a class="btn blue" th:href="@{/app/profile}">查看详情</a>
+        <a class="btn red" th:href="@{/app/logout}">退出登录</a>
+    </div>
+</div>
+</body>
+</html>
+
+%profile.html
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>个人信息</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:"Microsoft YaHei",sans-serif;background:#eef2f7;}
+        .container{
+            width:800px;margin:50px auto;background:#fff;
+            padding:35px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.08);
+        }
+        h2{text-align:center;margin-bottom:30px;}
+        .item{display:flex;border-bottom:1px solid #eee;padding:14px 0;}
+        .label{width:140px;font-weight:bold;color:#666;}
+        .value{flex:1;color:#333;}
+        .btns{text-align:center;margin-top:25px;}
+        .btn{
+            display:inline-block;padding:10px 22px;text-decoration:none;
+            border-radius:6px;color:#fff;margin:0 10px;
+        }
+        .blue{background:#409eff;}
+        .red{background:#f56c6c;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>个人信息详情页</h2>
+
+    <div class="item"><div class="label">用户ID：</div><div class="value" th:text="${user.id}"></div></div>
+    <div class="item"><div class="label">用户名：</div><div class="value" th:text="${user.username}"></div></div>
+    <div class="item"><div class="label">昵称：</div><div class="value" th:text="${user.nickname}"></div></div>
+    <div class="item"><div class="label">年龄：</div><div class="value" th:text="${user.age}"></div></div>
+    <div class="item"><div class="label">邮箱：</div><div class="value" th:text="${user.email}"></div></div>
+    <div class="item"><div class="label">手机号：</div><div class="value" th:text="${user.phone}"></div></div>
+    <div class="item"><div class="label">性别：</div><div class="value" th:text="${user.gender}"></div></div>
+    <div class="item"><div class="label">地址：</div><div class="value" th:text="${user.address}"></div></div>
+
+    <div class="btns">
+        <a class="btn blue" th:href="@{/app/index}">返回首页</a>
+        <a class="btn red" th:href="@{/app/logout}">退出登录</a>
+    </div>
+</div>
+</body>
+</html>
+
