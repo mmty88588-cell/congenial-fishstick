@@ -1,0 +1,462 @@
+%AppApplication.JAVA
+package fm.douban.app;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class AppApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(AppApplication.class, args);
+    }
+}
+
+%实体类model
+package fm.douban.app.model;
+
+import java.io.Serializable;
+
+public class UserLoginInfo implements Serializable {
+
+    private Long id;
+    private String username;
+    private String password;
+    private String nickname;
+    private Integer age;
+    private String email;
+    private String phone;
+    private String gender;
+    private String address;
+
+    public UserLoginInfo() {
+    }
+
+    public UserLoginInfo(Long id, String username, String password, String nickname,
+                         Integer age, String email, String phone, String gender, String address) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.nickname = nickname;
+        this.age = age;
+        this.email = email;
+        this.phone = phone;
+        this.gender = gender;
+        this.address = address;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+}
+
+%mapper接口
+package fm.douban.app.mapper;
+
+import fm.douban.app.model.UserLoginInfo;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+%Mapper
+public interface UserMapper {
+
+    UserLoginInfo selectByUsername(@Param("username") String username);
+
+    UserLoginInfo selectById(@Param("id") Long id);
+
+    int insertUser(UserLoginInfo user);
+}
+
+%mapper xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="fm.douban.app.mapper.UserMapper">
+
+    <resultMap id="userMap" type="fm.douban.app.model.UserLoginInfo">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="nickname" column="nickname"/>
+        <result property="age" column="age"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="gender" column="gender"/>
+        <result property="address" column="address"/>
+    </resultMap>
+
+    <select id="selectByUsername" resultMap="userMap">
+        SELECT
+            id, username, password, nickname, age, email, phone, gender, address
+        FROM tb_user
+        WHERE username = #{username}
+    </select>
+
+    <select id="selectById" resultMap="userMap">
+        SELECT
+            id, username, password, nickname, age, email, phone, gender, address
+        FROM tb_user
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insertUser" parameterType="fm.douban.app.model.UserLoginInfo"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_user (
+            username, password, nickname, age, email, phone, gender, address
+        ) VALUES (
+            #{username}, #{password}, #{nickname}, #{age}, #{email}, #{phone}, #{gender}, #{address}
+        )
+    </insert>
+
+</mapper>
+
+%service接口与实现类
+package fm.douban.app.service;
+
+import fm.douban.app.model.UserLoginInfo;
+
+public interface UserService {
+
+    UserLoginInfo login(String username, String password);
+
+    String register(UserLoginInfo user);
+
+    UserLoginInfo findById(Long id);
+}
+
+package fm.douban.app.service.impl;
+
+import fm.douban.app.mapper.UserMapper;
+import fm.douban.app.model.UserLoginInfo;
+import fm.douban.app.service.UserService;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserServiceImpl implements UserService {
+
+    private final UserMapper userMapper;
+
+    public UserServiceImpl(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
+
+    @Override
+    public UserLoginInfo login(String username, String password) {
+        UserLoginInfo user = userMapper.selectByUsername(username);
+
+        if (user == null) {
+            return null;
+        }
+
+        if (!user.getPassword().equals(password)) {
+            return null;
+        }
+
+        return user;
+    }
+
+    @Override
+    public String register(UserLoginInfo user) {
+        if (user == null) {
+            return "注册信息不能为空";
+        }
+
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+            return "用户名不能为空";
+        }
+
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            return "密码不能为空";
+        }
+
+        if (user.getNickname() == null || user.getNickname().trim().isEmpty()) {
+            return "昵称不能为空";
+        }
+
+        UserLoginInfo oldUser = userMapper.selectByUsername(user.getUsername());
+        if (oldUser != null) {
+            return "用户名已存在";
+        }
+
+        userMapper.insertUser(user);
+        return "success";
+    }
+
+    @Override
+    public UserLoginInfo findById(Long id) {
+        return userMapper.selectById(id);
+    }
+}
+
+%UserControl
+package fm.douban.app.control;
+
+import fm.douban.app.model.UserLoginInfo;
+import fm.douban.app.service.UserService;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/app")
+public class UserControl {
+
+    private final UserService userService;
+
+    public UserControl(UserService userService) {
+        this.userService = userService;
+    }
+
+    /**
+     * 登录页
+     */
+    @GetMapping("/login")
+    public String loginPage() {
+        return "login";
+    }
+
+    /**
+     * 注册页
+     */
+    @GetMapping("/register")
+    public String registerPage() {
+        return "register";
+    }
+
+    /**
+     * 处理登录
+     */
+    @PostMapping("/doLogin")
+    public String doLogin(String username, String password, Model model, HttpSession session) {
+
+        if (username == null || username.trim().isEmpty()) {
+            model.addAttribute("errorMsg", "用户名不能为空！");
+            return "login";
+        }
+
+        if (password == null || password.trim().isEmpty()) {
+            model.addAttribute("errorMsg", "密码不能为空！");
+            model.addAttribute("username", username);
+            return "login";
+        }
+
+        UserLoginInfo user = userService.login(username, password);
+
+        if (user == null) {
+            model.addAttribute("errorMsg", "用户名或密码错误！");
+            model.addAttribute("username", username);
+            return "login";
+        }
+
+        session.setAttribute("loginUser", user);
+        return "redirect:/app/index";
+    }
+
+    /**
+     * 处理注册
+     */
+    @PostMapping("/doRegister")
+    public String doRegister(UserLoginInfo user, Model model) {
+
+        String result = userService.register(user);
+
+        if (!"success".equals(result)) {
+            model.addAttribute("errorMsg", result);
+            model.addAttribute("user", user);
+            return "register";
+        }
+
+        model.addAttribute("successMsg", "注册成功，请登录！");
+        model.addAttribute("username", user.getUsername());
+        return "login";
+    }
+
+    /**
+     * 首页
+     */
+    @GetMapping("/index")
+    public String index(HttpSession session, Model model) {
+        UserLoginInfo user = (UserLoginInfo) session.getAttribute("loginUser");
+        model.addAttribute("user", user);
+        return "index";
+    }
+
+    /**
+     * 详情页
+     */
+    @GetMapping("/profile")
+    public String profile(HttpSession session, Model model) {
+        UserLoginInfo loginUser = (UserLoginInfo) session.getAttribute("loginUser");
+        UserLoginInfo user = userService.findById(loginUser.getId());
+        model.addAttribute("user", user);
+        return "profile";
+    }
+
+    /**
+     * 退出登录
+     */
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/app/login";
+    }
+}
+
+%拦截器
+package fm.douban.app.interceptor;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+@Component
+public class UserInterceptor implements HandlerInterceptor {
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+
+        HttpSession session = request.getSession();
+        Object user = session.getAttribute("loginUser");
+
+        if (user != null) {
+            return true;
+        }
+
+        response.sendRedirect(request.getContextPath() + "/app/login");
+        return false;
+    }
+}
+
+%配置类
+package fm.douban.app.config;
+
+import fm.douban.app.interceptor.UserInterceptor;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class AppConfigurer implements WebMvcConfigurer {
+
+    private final UserInterceptor userInterceptor;
+
+    public AppConfigurer(UserInterceptor userInterceptor) {
+        this.userInterceptor = userInterceptor;
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(userInterceptor)
+                .addPathPatterns("/app/**")
+                .excludePathPatterns(
+                        "/app/login",
+                        "/app/register",
+                        "/app/doLogin",
+                        "/app/doRegister",
+                        "/error",
+                        "/css/**",
+                        "/js/**",
+                        "/images/**",
+                        "/webjars/**"
+                );
+    }
+}
+
+%session cookie
+package fm.douban.app.config;
+
+import jakarta.servlet.SessionCookieConfig;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class SpringHttpSessionConfig {
+
+    @Bean
+    public ServletContextInitializer servletContextInitializer() {
+        return servletContext -> {
+            SessionCookieConfig cookieConfig = servletContext.getSessionCookieConfig();
+            cookieConfig.setName("DOUBAN_SESSION");
+            cookieConfig.setHttpOnly(true);
+            cookieConfig.setPath("/");
+        };
+    }
+}
+  
+
+  
